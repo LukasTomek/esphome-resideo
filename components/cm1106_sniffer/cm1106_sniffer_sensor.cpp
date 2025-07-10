@@ -17,7 +17,7 @@ static const char *TAG = "cm1106_sniffer";
 // We use the standard (default) Serial (UART) to receive the data from the CM1106 sensor.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void CM1106SnifferSensor::setup() {
-  Serial.begin(9600);
+  //Serial.begin(9600);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,21 +35,20 @@ void CM1106SnifferSensor::loop()
   uint8_t expected_header[3] = {0x16, 0x05, 0x01};
 
   // first check if there are sufficient bytes available
-  int available = Serial.available();
-  if (available < 8) 
+  //int available = Serial.available();
+  if (this->available() < 8) 
     return;
 
   // consume old messages
-  while (available >= 16) {
-    Serial.readBytes(response, 8);
-    available = Serial.available();
+  while (this->available() >= 16) {
+    this->read_byte(response, 8);
   }
 
   // find the start of the message
   int matched = 0;
   while (matched < sizeof(expected_header)) {
-    if (Serial.available()) {
-      Serial.readBytes(response + matched, 1);
+    if (this->available()) {
+      this->readBytes(response + matched, 1);
     } else {
       return; // exit if we didnt find the header and uart queue is empty
     }
@@ -60,12 +59,12 @@ void CM1106SnifferSensor::loop()
     }
   }
   // if we end up here we have found the header
-  available = Serial.available();
-  if (available < sizeof(response) - matched) {
-    ESP_LOGW(TAG, "Not enough bytes available after header match: %d", available);
+  //available = Serial.available();
+  if (this->available() < sizeof(response) - matched) {
+    ESP_LOGW(TAG, "Not enough bytes available after header match: %d", this->available());
     return; // not enough bytes available to read the rest of the message
   }
-  matched += Serial.readBytes(&response[matched], sizeof(response) - matched);
+  matched += this->readBytes(&response[matched], sizeof(response) - matched);
 
   // Checksum: 256-(HEAD+LEN+CMD+DATA)%256
   uint8_t crc = 0;
