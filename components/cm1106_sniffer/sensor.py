@@ -18,9 +18,9 @@ CONFIG_SCHEMA = (sensor.sensor_schema(
     accuracy_decimals=0,
     device_class=DEVICE_CLASS_CARBON_DIOXIDE,
     state_class='measurement',
-).extend({cv.GenerateID(): cv.declare_id(CM1106Sniffer),})
- .extend(uart.UART_DEVICE_SCHEMA)
- .extend(cv.polling_component_schema("5s"))
+).extend(cv.polling_component_schema("5s"))
+.extend(uart.UART_DEVICE_SCHEMA)
+.extend({cv.GenerateID(): cv.declare_id(CM1106Sniffer),})
 )
 
 FINAL_VALIDATE_SCHEMA = uart.final_validate_device_schema(
