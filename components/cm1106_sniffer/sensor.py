@@ -12,7 +12,7 @@ DEPENDENCIES = ["uart"]
 cm1106_ns = cg.esphome_ns.namespace('cm1106_sniffer')
 CM1106Sniffer = cm1106_ns.class_('CM1106SnifferSensor', sensor.Sensor, cg.PollingComponent, uart.UARTDevice)
 
-CONFIG_SCHEMA = sensor.sensor_schema(
+CONFIG_SCHEMA = (sensor.sensor_schema(
     unit_of_measurement=UNIT_PARTS_PER_MILLION,
     icon=ICON_MOLECULE_CO2,
     accuracy_decimals=0,
@@ -21,6 +21,7 @@ CONFIG_SCHEMA = sensor.sensor_schema(
 ).extend({cv.GenerateID(): cv.declare_id(CM1106Sniffer),})
  .extend(uart.UART_DEVICE_SCHEMA)
  .extend(cv.polling_component_schema("5s"))
+)
 
 FINAL_VALIDATE_SCHEMA = uart.final_validate_device_schema(
     baud_rate=9600,
