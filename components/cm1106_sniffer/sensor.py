@@ -14,6 +14,7 @@ CM1106Sniffer = cm1106_ns.class_('CM1106SnifferSensor', sensor.Sensor, cg.Pollin
 
 CONFIG_SCHEMA = (
     sensor.sensor_schema(
+        CM1106Sniffer,
         unit_of_measurement=UNIT_PARTS_PER_MILLION,
         icon=ICON_MOLECULE_CO2,
         accuracy_decimals=0,
