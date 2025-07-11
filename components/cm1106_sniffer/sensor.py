@@ -27,6 +27,7 @@ CONFIG_SCHEMA = (
 )
 
 FINAL_VALIDATE_SCHEMA = uart.final_validate_device_schema(
+    'cm1106_sniffer',
     baud_rate=9600,
     require_tx=True,
     require_rx=True,
