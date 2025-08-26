@@ -27,49 +27,49 @@ void CM1106SnifferSensor::setup() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void CM1106SnifferSensor::loop() 
 {
-  uint8_t response[8] = {0};
+  while (this->available() > 0) {
+    uint8_t data;
+    this->read_byte(&data);
 
+    ESP_LOGV(TAG, "Read byte from sensor: %x", data);
+
+    if (this->buffer_.empty() && data != 0xFF)
+      continue;
+
+    this->buffer_.push_back(data);
+    if (this->buffer_.size() >= 8)
+      this->check_buffer_();
+  }
+}
+
+void CM1106SnifferSensor::check_buffer_() 
+{
   // All read responses start with 0x16
   // The payload length for the Co2 message is 0x05
   // The command for the Co2 message is 0x01
   uint8_t expected_header[3] = {0x16, 0x05, 0x01};
 
-  // first check if there are sufficient bytes available
-  //int available = Serial.available();
-  if (this->available() < 8) 
-    return;
-
-  // consume old messages
-  while (this->available() >= 16) {
-    this->read_byte(response, 8);
-  }
-
-  // find the start of the message
+   // find the start of the message
   int matched = 0;
-  while (matched < sizeof(expected_header)) {
-    if (this->available()) {
-      this->readBytes(response + matched, 1);
+  while (matched < this->buffer_.size()) {
+    if (this->buffer_[matched] == expected_header[0] && this->buffer_[matched + 1] == expected_header[1] && this->buffer_[matched + 2] == expected_header[2]) {
+        ESP_LOGV(TAG, "we got header in : %x", matched);
+        break;
     } else {
-      return; // exit if we didnt find the header and uart queue is empty
-    }
-    if (response[matched] == expected_header[matched]) {
       matched++;
-    } else {
-      matched = 0; // reset if we don't match
     }
   }
   // if we end up here we have found the header
-  //available = Serial.available();
-  if (this->available() < sizeof(response) - matched) {
+  if (this->buffer_.size() < matched + 5) {
     ESP_LOGW(TAG, "Not enough bytes available after header match: %d", this->available());
     return; // not enough bytes available to read the rest of the message
   }
-  matched += this->readBytes(&response[matched], sizeof(response) - matched);
 
   // Checksum: 256-(HEAD+LEN+CMD+DATA)%256
   uint8_t crc = 0;
-  for (int i = 0; i < matched; ++i)
-    crc -= response[i];
+  for (int i = matched; i < this->buffer_.size(); ++i)
+    crc -= this->buffer_[i];
+    ESP_LOGV(TAG, "CRC i: %x", i);
 
   // We have included the CRC checksum (last byte of the response) so the crc should equal to 0x00
   if (crc != 0x00) {
@@ -77,7 +77,8 @@ void CM1106SnifferSensor::loop()
     return; // checksum does not match
   }
   // everything is okay, store the PPM in cached_ppm_ so it can be published
-  cached_ppm_ = (response[3] << 8) | response[4];
+  cached_ppm_ = (this->buffer_[i] << 8) |this->buffer_[i];
+  this->buffer_.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

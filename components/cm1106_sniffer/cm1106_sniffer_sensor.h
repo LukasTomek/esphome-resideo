@@ -21,7 +21,9 @@ public:
     ESP_LOGCONFIG("Resideo", "CM1106 Sniffer (C)Pluimvee");
   };
 protected:
+  void check_buffer_();
   uint16_t cached_ppm_{0};
+  std::vector<uint8_t> buffer_;
 };
 
 }  // namespace cm1106_sniffer
