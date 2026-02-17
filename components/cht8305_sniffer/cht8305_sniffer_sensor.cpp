@@ -157,9 +157,9 @@ namespace cht8305_sniffer
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CHT8305SnifferSensor::update()
     {
-        if (temperature_raw_.empty() || humidity_raw_.empty())
+        if (temperature_raw_.size() < 10 || humidity_raw_.size() < 10)
         {
-            ESP_LOGW("cht8305_sniffer", "No data available to update sensors.");
+            ESP_LOGW("cht8305_sniffer", "Not enough samples (<10) available to update sensors.");
             return;
         }
         ESP_LOGD("cht8305_sniffer", "Taking the mean from a window size %d", temperature_raw_.size());
